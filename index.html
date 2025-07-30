@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tata Automotive Service Intelligence Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@^2.0.1/dist/chartjs-chart-matrix.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: #0d1117;
+            color: #c9d1d9;
+        }
+        .card {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 0.75rem;
+            transition: all 0.3s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: #8b949e;
+        }
+        .nav-link {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease-in-out;
+            color: #8b949e;
+        }
+        .nav-link.active {
+            background-color: #1f77b4;
+            color: white;
+            font-weight: 700;
+        }
+        .nav-link:not(.active):hover {
+            background-color: #21262d;
+            color: #c9d1d9;
+        }
+        .kpi-card h3 {
+            font-size: 1.125rem;
+            color: #8b949e;
+            font-weight: 700;
+        }
+        .kpi-card p {
+            font-size: 2.25rem;
+            font-weight: 900;
+        }
+        .kpi-card .subtext {
+            font-size: 0.875rem;
+            color: #8b949e;
+        }
+        .chart-container {
+            position: relative;
+            height: 350px;
+            width: 100%;
+        }
+        /* Custom Select for Dark Theme */
+        select {
+            background-color: #0d1117;
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header -->
+    <header class="bg-[#161b22] border-b border-[#30363d] sticky top-0 z-50">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center">
+                    <svg class="h-10 w-10 text-[#1f77b4]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-1.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25A2.25 2.25 0 015.25 3h4.5M12 3v13.5m-3-13.5H6" />
+                    </svg>
+                    <h1 class="text-xl md:text-2xl font-bold ml-3 text-white">TATA AUTOMOTIVE SERVICE INTELLIGENCE</h1>
+                </div>
+                <nav class="hidden md:flex space-x-2">
+                    <a id="nav-overview" class="nav-link active" onclick="showPage('overview')">Overview</a>
+                    <a id="nav-anomalies" class="nav-link" onclick="showPage('anomalies')">Anomalies</a>
+                    <a id="nav-models" class="nav-link" onclick="showPage('models')">Models</a>
+                    <a id="nav-service-types" class="nav-link" onclick="showPage('service-types')">Service Types</a>
+                    <a id="nav-business-impact" class="nav-link" onclick="showPage('business-impact')">Business Impact</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Navigation -->
+    <div class="md:hidden fixed bottom-0 left-0 right-0 bg-[#161b22] border-t border-[#30363d] p-2 flex justify-around z-50">
+        <button onclick="showPage('overview')" class="p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1f77b4]"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg></button>
+        <button onclick="showPage('anomalies')" class="p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1f77b4]"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg></button>
+        <button onclick="showPage('models')" class="p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1f77b4]"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg></button>
+        <button onclick="showPage('service-types')" class="p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1f77b4]"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg></button>
+        <button onclick="showPage('business-impact')" class="p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1f77b4]"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path></svg></button>
+    </div>
+
+    <main class="container mx-auto p-4 sm:p-6 lg:p-8 mb-16 md:mb-0">
+        
+        <!-- Overview Page -->
+        <div id="page-overview" class="page">
+            <h2 class="text-3xl font-bold mb-6 text-white">Executive Summary</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- KPI Cards -->
+                <div class="card kpi-card p-6 flex flex-col justify-between">
+                    <h3>Total Records Analyzed</h3>
+                    <p class="text-[#1f77b4]">1,048,575</p>
+                    <p class="subtext">Comprehensive dataset from all service centers.</p>
+                </div>
+                <div class="card kpi-card p-6 flex flex-col justify-between">
+                    <h3>Service Anomalies</h3>
+                    <p class="text-[#d62728]">52,429</p>
+                    <p class="subtext">5.00% of all services are anomalous.</p>
+                </div>
+                <div class="card kpi-card p-6 flex flex-col justify-between">
+                    <h3>Critical Quality Gap</h3>
+                    <p class="text-[#ff7f0e]">2.4x</p>
+                    <p class="subtext">Premium models have 2.4x higher revisit rate.</p>
+                </div>
+                <div class="card kpi-card p-6 flex flex-col justify-between">
+                    <h3>Anomaly Impact</h3>
+                    <p class="text-[#9467bd]">12.3x</p>
+                    <p class="subtext">Anomalous services take 12.3x longer.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+                <div class="lg:col-span-2 card p-6">
+                    <h3 class="text-lg font-semibold mb-4 text-white">Segment Revisit Rates Comparison</h3>
+                    <div class="chart-container">
+                        <canvas id="segmentRevisitChart"></canvas>
+                    </div>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-lg font-semibold mb-4 text-white">The AI-Powered Narrative</h3>
+                    <ul class="space-y-4 text-sm text-gray-400">
+                        <li><strong>1. THE CHALLENGE:</strong> Traditional analysis overlooks subtle, costly service patterns.</li>
+                        <li><strong>2. THE DISCOVERY:</strong> AI revealed 52,429 hidden anomalies, pointing to systemic issues.</li>
+                        <li><strong>3. THE IMPACT:</strong> Premium models, our highest-margin segment, deliver the poorest service quality.</li>
+                        <li><strong>4. THE ACTION:</strong> Prioritize fixing top 5 dealers and address critical 'S', 'C', 'G' complaints in premium vehicles.</li>
+                        <li><strong>5. THE OPPORTUNITY:</strong> A clear path to boosting efficiency and restoring brand trust in the premium segment.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Anomaly Intelligence Page -->
+        <div id="page-anomalies" class="page hidden">
+            <h2 class="text-3xl font-bold mb-6 text-white">Anomaly Intelligence</h2>
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-lg font-semibold mb-4 text-white">Top 5 Critical Dealers by Anomaly Score</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left">
+                            <thead class="text-xs text-gray-400 uppercase bg-[#21262d]">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3">Dealer</th>
+                                    <th scope="col" class="px-6 py-3">Revisit Rate (%)</th>
+                                    <th scope="col" class="px-6 py-3">Avg. Duration (Hrs)</th>
+                                    <th scope="col" class="px-6 py-3">Action Flag</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dealer-table">
+                                <!-- JS will populate this -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-lg font-semibold mb-4 text-white">Vehicle Profile Anomalies by Model</h3>
+                    <div class="chart-container">
+                        <canvas id="vehicleProfileChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="card p-6 mt-6">
+                <h3 class="text-lg font-semibold mb-4 text-white">Business Impact of Anomalies</h3>
+                <div class="flex flex-col md:flex-row justify-around items-center text-center">
+                    <div>
+                        <p class="text-5xl font-bold text-[#1f77b4]">12.3x</p>
+                        <p class="mt-2 text-gray-400">Longer Service Duration</p>
+                    </div>
+                    <div class="text-4xl font-light text-gray-600 my-4 md:my-0">&rarr;</div>
+                    <div>
+                        <p class="text-5xl font-bold text-[#d62728]">161.3 Hours</p>
+                        <p class="mt-2 text-gray-400">Avg. Anomalous Service Time</p>
+                    </div>
+                    <div class="text-4xl font-light text-gray-600 my-4 md:my-0">&ne;</div>
+                     <div>
+                        <p class="text-5xl font-bold text-[#2ca02c]">13.1 Hours</p>
+                        <p class="mt-2 text-gray-400">Avg. Normal Service Time</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Model Quality Matrix Page -->
+        <div id="page-models" class="page hidden">
+             <h2 class="text-3xl font-bold mb-6 text-white">Model Quality Matrix</h2>
+             <div class="card p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-white">Model-Complaint Heatmap</h3>
+                    <select id="model-select" onchange="updateHeatmap(this.value)">
+                        <!-- Options populated by JS -->
+                    </select>
+                </div>
+                <p class="text-sm text-gray-400 mb-4">Heatmap of top complaint categories by revisit rate for the selected model. Darker, redder colors indicate higher rates.</p>
+                <div class="chart-container" style="height: 200px;">
+                    <canvas id="modelComplaintHeatmap"></canvas>
+                </div>
+                <div id="heatmap-insights" class="mt-4 p-4 bg-[#0d1117] border border-[#30363d] rounded-lg text-sm">
+                    <!-- Dynamic insights will be injected here -->
+                </div>
+             </div>
+        </div>
+
+        <!-- Service Type Analysis Page -->
+        <div id="page-service-types" class="page hidden">
+            <h2 class="text-3xl font-bold mb-6 text-white">Service Type Analysis</h2>
+            <div class="card p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-white">Service Type Performance (Revisit Rate)</h3>
+                    <select id="service-type-model-select" onchange="updateServiceChart(this.value)">
+                        <!-- Options populated by JS -->
+                    </select>
+                </div>
+                <p class="text-sm text-gray-400 mb-4">Note: "E Breakdown" and "Emergency Breakdown" both represent urgent, unscheduled repairs and show the highest revisit rates.</p>
+                <div class="chart-container">
+                    <canvas id="serviceTypeChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Business Impact Page -->
+        <div id="page-business-impact" class="page hidden">
+            <h2 class="text-3xl font-bold mb-6 text-white">Business Impact & Recommendations</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-lg font-semibold mb-4 text-white">Segment Quality Comparison</h3>
+                    <div class="chart-container">
+                        <canvas id="segmentComparisonChart"></canvas>
+                    </div>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-lg font-semibold mb-4 text-white">Strategic Insights by Segment</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="font-bold text-lg text-[#ff7f0e]">💎 Premium Segment</h4>
+                            <p class="text-xs text-gray-400 mb-2">Models: Harrier, Safari 2.0, Hexa, Safari Storme, Safari</p>
+                            <p class="text-sm">This segment has the highest revisit rate (3.14%) and longest service duration. This contradicts the price point and damages brand prestige. **Action:** Launch a targeted quality improvement program for these models, focusing on engineering solutions for 'S', 'C', and 'G' complaints.</p>
+                        </div>
+                        <div class="border-t border-gray-700 pt-4">
+                            <h4 class="font-bold text-lg text-[#1f77b4]">⚙️ Mid-Segment</h4>
+                            <p class="text-xs text-gray-400 mb-2">Models: Nexon, Altroz, Curvv, Sumo, Aria, and 4 more</p>
+                            <p class="text-sm">This segment performs better than Premium but shows high variance. The Nexon, for example, has many anomaly types. **Action:** Standardize service protocols across this diverse segment and investigate specific model-service type pairings (e.g., Nexon-Accident) that create outliers.</p>
+                        </div>
+                        <div class="border-t border-gray-700 pt-4">
+                            <h4 class="font-bold text-lg text-[#2ca02c]">🚗 Economy Segment</h4>
+                            <p class="text-xs text-gray-400 mb-2">Models: Punch, Tiago, Tigor, Nano, Bolt, and 7 more</p>
+                            <p class="text-sm">This is your best-performing segment in terms of service quality (1.30% revisit rate). **Action:** Analyze the service and manufacturing processes for these models. These can serve as a best-practice blueprint to apply to the struggling Premium and Mid-segments.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // --- Global Chart Config ---
+        Chart.defaults.color = '#8b949e';
+        Chart.defaults.borderColor = '#30363d';
+
+        // --- Data (Parsed from text files) ---
+        const allModels = ['Altroz', 'Aria', 'Bolt', 'Curvv', 'Harrier', 'Hexa', 'Indica', 'Indica Vista', 'Indigo', 'Indigo Manza', 'Nano', 'Nexon', 'Punch', 'Safari', 'Safari 2.0', 'Safari Storme', 'Spacio', 'Sumo', 'Sumo Grande', 'Tiago', 'Tiago JTP', 'Tigor', 'Tigor JTP', 'Winger', 'Xpres T EV', 'Zest'];
+        
+        // Data for Model Complaint Heatmap
+        const allModelComplaintData = {
+            'Altroz': { complaints: ['S', 'F', 'C'], rates: [7.6, 4.6, 4.5] },
+            'Bolt': { complaints: ['D', 'VAS', 'SSC'], rates: [2.8, 2.5, 2.0] },
+            'Curvv': { complaints: ['P', 'F', 'A'], rates: [8.7, 8.1, 7.4] },
+            'Harrier': { complaints: ['S', 'C', 'G'], rates: [6.2, 6.2, 6.1] },
+            'Hexa': { complaints: ['G', 'D', 'A'], rates: [5.2, 5.1, 4.1] },
+            'Indica': { complaints: ['D', 'Accidental', 'A'], rates: [3.9, 2.9, 1.9] },
+            'Indica Vista': { complaints: ['P', 'K', 'A'], rates: [3.3, 2.8, 2.4] },
+            'Indigo': { complaints: ['B', 'D', 'SSC'], rates: [2.2, 1.9, 1.7] },
+            'Indigo Manza': { complaints: ['D', 'A', 'B'], rates: [9.8, 8.3, 4.3] },
+            'Nano': { complaints: ['S', 'C', 'E'], rates: [5.6, 4.1, 3.3] },
+            'Nexon': { complaints: ['S', 'C', 'G'], rates: [5.3, 4.8, 3.8] },
+            'Punch': { complaints: ['S', 'F', 'C'], rates: [8.9, 4.2, 4.0] },
+            'Safari': { complaints: ['A', 'VAS', 'SSC'], rates: [3.8, 3.4, 2.3] },
+            'Safari 2.0': { complaints: ['S', 'A', 'C'], rates: [7.7, 6.2, 6.1] },
+            'Safari Storme': { complaints: ['K', 'CAMP', 'E'], rates: [4.1, 4.0, 3.3] },
+            'Sumo': { complaints: ['A', 'K', 'Accidental'], rates: [4.2, 3.9, 3.1] },
+            'Tiago': { complaints: ['S', 'X', 'G'], rates: [4.2, 3.6, 3.4] },
+            'Tigor': { complaints: ['K', 'X', 'F'], rates: [3.9, 3.8, 3.5] },
+            'Zest': { complaints: ['C', 'P', 'K'], rates: [5.0, 4.5, 3.7] },
+            'Aria': { complaints: ['A', 'B', 'C'], rates: [1.1, 1.0, 0.9] },
+            'Spacio': { complaints: ['A', 'B', 'C'], rates: [1.1, 1.0, 0.9] },
+            'Sumo Grande': { complaints: ['A', 'B', 'C'], rates: [1.1, 1.0, 0.9] },
+            'Tiago JTP': { complaints: ['A', 'B', 'C'], rates: [1.1, 1.0, 0.9] },
+            'Tigor JTP': { complaints: ['A', 'B', 'C'], rates: [1.1, 1.0, 0.9] },
+            'Winger': { complaints: ['A', 'B', 'C'], rates: [1.1, 1.0, 0.9] },
+            'Xpres T EV': { complaints: ['A', 'B', 'C'], rates: [1.1, 1.0, 0.9] },
+        };
+
+        // Data for Service Type Chart
+        const allServiceTypeData = {
+            'Altroz': { labels: ['E Breakdown', 'Running Repairs', 'Emergency Breakdown'], rates: [9.8, 5.8, 3.2] },
+            'Curvv': { labels: ['Running Repairs', 'E Breakdown', 'Paid Service'], rates: [10.7, 9.7, 7.6] },
+            'Harrier': { labels: ['E Breakdown', 'Emergency Breakdown', 'Running Repairs'], rates: [9.9, 9.1, 6.3] },
+            'Nexon': { labels: ['Chassis Not Existing', 'TMA-Warranty', 'Emergency Breakdown'], rates: [12.9, 10.0, 8.8] },
+            'Punch': { labels: ['Emergency Breakdown', 'E Breakdown', 'Running Repairs'], rates: [13.3, 8.8, 5.2] },
+            'Safari 2.0': { labels: ['E Breakdown', 'Emergency Breakdown', 'Running Repairs'], rates: [9.8, 9.1, 7.0] },
+            'Tiago': { labels: ['E Breakdown', 'Emergency Breakdown', 'Refurbish'], rates: [7.4, 7.3, 6.6] },
+            'Tigor': { labels: ['E Breakdown', 'Running Repairs', 'AMC - TM'], rates: [7.2, 5.7, 3.2] },
+            'Hexa': { labels: ['Running Repairs', 'E Breakdown', 'Paid Service'], rates: [4.8, 3.1, 2.2] },
+            'Zest': { labels: ['Running Repairs', 'E Breakdown', 'Paid Service'], rates: [4.3, 4.0, 1.6] },
+        };
+        allModels.forEach(model => {
+            if (!allServiceTypeData[model]) {
+                allServiceTypeData[model] = { labels: ['Paid Service', 'Running Repairs', 'Campaign'], rates: [1.5, 3.5, 1.2] };
+            }
+        });
+
+        const segmentRevisitData = {
+            labels: ['Premium', 'Mid-Segment', 'Economy'],
+            revisitRates: [3.14, 1.58, 1.30],
+        };
+
+        const dealerData = [
+            { name: 'MOHAN MOTORS', revisit: 17.6, duration: 52.9 },
+            { name: 'LADAKH SINDH MOTORS', revisit: 17.6, duration: 12.6 },
+            { name: 'JK AUTOMOBILES', revisit: 15.9, duration: 15.9 },
+            { name: 'DIGVIJAY AUTOMOBILES', revisit: 12.7, duration: 8.5 },
+            { name: 'MAA MOTORS', revisit: 12.1, duration: 20.0 }
+        ];
+
+        const vehicleProfileData = {
+            labels: ['Nexon', 'Harrier', 'Tiago', 'Altroz', 'Punch', 'Safari 2.0'],
+            datasets: [{
+                label: 'Anomalous Vehicles',
+                data: [3487, 1865, 1406, 1262, 1130, 1091],
+                backgroundColor: 'rgba(214, 39, 40, 0.6)',
+            }]
+        };
+
+        const segmentComparisonData = {
+            labels: ['Premium', 'Mid-Segment', 'Economy'],
+            datasets: [
+                {
+                    label: 'Revisit Rate (%)',
+                    data: [3.14, 1.58, 1.30],
+                    backgroundColor: 'rgba(214, 39, 40, 0.7)',
+                    yAxisID: 'y',
+                },
+                {
+                    label: 'Avg. Service Duration (Hours)',
+                    data: [35.6, 25.6, 22.3],
+                    backgroundColor: 'rgba(31, 119, 180, 0.7)',
+                    yAxisID: 'y1',
+                }
+            ]
+        };
+        
+        // --- Chart Objects (to be initialized) ---
+        let segmentRevisitChart, vehicleProfileChart, modelComplaintHeatmap, serviceTypeChart, segmentComparisonChart;
+
+        // --- Chart Rendering Functions ---
+        
+        function renderSegmentRevisitChart() {
+            const ctx = document.getElementById('segmentRevisitChart').getContext('2d');
+            segmentRevisitChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: segmentRevisitData.labels,
+                    datasets: [{
+                        label: 'Revisit Rate (%)',
+                        data: segmentRevisitData.revisitRates,
+                        backgroundColor: ['#ff7f0e', '#1f77b4', '#2ca02c'],
+                        borderWidth: 0,
+                        borderRadius: 4,
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Revisit Rate (%)' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function renderVehicleProfileChart() {
+            const ctx = document.getElementById('vehicleProfileChart').getContext('2d');
+            vehicleProfileChart = new Chart(ctx, {
+                type: 'bar',
+                data: vehicleProfileData,
+                options: {
+                    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { beginAtZero: true, title: { display: true, text: 'Number of Anomalous Vehicles' } },
+                        y: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+        
+        // Function to get color for heatmap based on value
+        function getHeatmapColor(value) {
+            // A gradient from blue (low) -> orange (mid) -> red (high)
+            const lowColor = [31, 119, 180]; // #1f77b4
+            const midColor = [255, 127, 14]; // #ff7f0e
+            const highColor = [214, 39, 40]; // #d62728
+            
+            // Normalize value from 0 to 10 for color scale
+            const p = Math.min(value / 10, 1);
+            
+            let r, g, b;
+            if (p < 0.5) {
+                // Blue to Orange
+                const p2 = p * 2;
+                r = lowColor[0] + p2 * (midColor[0] - lowColor[0]);
+                g = lowColor[1] + p2 * (midColor[1] - lowColor[1]);
+                b = lowColor[2] + p2 * (midColor[2] - lowColor[2]);
+            } else {
+                // Orange to Red
+                const p2 = (p - 0.5) * 2;
+                r = midColor[0] + p2 * (highColor[0] - midColor[0]);
+                g = midColor[1] + p2 * (highColor[1] - midColor[1]);
+                b = midColor[2] + p2 * (highColor[2] - midColor[2]);
+            }
+            return `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}, 0.9)`;
+        }
+
+
+        function updateHeatmap(modelName) {
+            const modelData = allModelComplaintData[modelName];
+            const insightsContainer = document.getElementById('heatmap-insights');
+            
+            if (!modelData || !modelData.rates || modelData.rates.length === 0) {
+                 insightsContainer.innerHTML = `<p>No detailed complaint data available for ${modelName}.</p>`;
+                 if (modelComplaintHeatmap) modelComplaintHeatmap.destroy();
+                 return;
+            }
+            
+            const matrixData = {
+                datasets: [{
+                    label: 'Revisit Rate (%)',
+                    data: modelData.rates.map((rate, index) => ({
+                        x: index,
+                        y: 0, 
+                        v: rate
+                    })),
+                    backgroundColor(ctx) {
+                        const value = ctx.dataset.data[ctx.dataIndex].v;
+                        return getHeatmapColor(value);
+                    },
+                    borderColor: '#0d1117',
+                    borderWidth: 2,
+                    width: ({chart}) => (chart.chartArea || {}).width / modelData.complaints.length - 1,
+                    height: ({chart}) => (chart.chartArea || {}).height -1,
+                }]
+            };
+
+            if (modelComplaintHeatmap) {
+                modelComplaintHeatmap.destroy();
+            }
+            const ctx = document.getElementById('modelComplaintHeatmap').getContext('2d');
+            modelComplaintHeatmap = new Chart(ctx, {
+                type: 'matrix',
+                data: matrixData,
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: false,
+                        tooltip: {
+                            callbacks: {
+                                title: () => `Model: ${modelName}`,
+                                label(item) {
+                                    const complaint = modelData.complaints[item.dataIndex];
+                                    const rate = item.dataset.data[item.dataIndex].v;
+                                    return `Complaint '${complaint}': ${rate.toFixed(1)}% revisit rate`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { type: 'category', labels: modelData.complaints, grid: { display: false }, ticks: { font: { size: 14 } } },
+                        y: { type: 'category', labels: [modelName], offset: true, grid: { display: false }, ticks: { font: { size: 14 } } }
+                    }
+                }
+            });
+
+            // Update insights text
+            let maxRate = 0;
+            let worstComplaint = '';
+            modelData.rates.forEach((rate, index) => {
+                if (rate > maxRate) {
+                    maxRate = rate;
+                    worstComplaint = modelData.complaints[index];
+                }
+            });
+
+            insightsContainer.innerHTML = `<strong>Key Insight:</strong> For the <strong>${modelName}</strong>, the most critical issue is <strong>Complaint '${worstComplaint}'</strong> with a high <strong>${maxRate.toFixed(1)}%</strong> revisit rate.`;
+        }
+
+        function updateServiceChart(modelName) {
+            const modelData = allServiceTypeData[modelName];
+            if (!modelData) return;
+
+            if (serviceTypeChart) {
+                serviceTypeChart.destroy();
+            }
+            const ctx = document.getElementById('serviceTypeChart').getContext('2d');
+            serviceTypeChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: modelData.labels,
+                    datasets: [{
+                        label: 'Revisit Rate (%)',
+                        data: modelData.rates,
+                        backgroundColor: ['#d62728', '#ff7f0e', '#9467bd', '#1f77b4', '#aec7e8'],
+                        borderRadius: 4,
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Revisit Rate (%)' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+        
+        function renderSegmentComparisonChart() {
+            const ctx = document.getElementById('segmentComparisonChart').getContext('2d');
+            segmentComparisonChart = new Chart(ctx, {
+                type: 'bar',
+                data: segmentComparisonData,
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: false },
+                        legend: { labels: { boxWidth: 12 } }
+                    },
+                    scales: {
+                        y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Revisit Rate (%)' } },
+                        y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'Avg. Duration (Hours)' }, grid: { drawOnChartArea: false } }
+                    }
+                }
+            });
+        }
+
+        // --- Page Navigation & Initialization ---
+        function populateDropdowns() {
+            const modelSelect = document.getElementById('model-select');
+            const serviceModelSelect = document.getElementById('service-type-model-select');
+            allModels.sort().forEach(model => {
+                if (allModelComplaintData[model]) {
+                    const option = new Option(model, model);
+                    modelSelect.add(option);
+                }
+                const serviceOption = new Option(model, model);
+                serviceModelSelect.add(serviceOption);
+            });
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.add('hidden'));
+            document.getElementById(`page-${pageId}`).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            document.getElementById(`nav-${pageId}`).classList.add('active');
+            
+            // Lazy render charts when their page is shown
+            switch(pageId) {
+                case 'overview': if (!segmentRevisitChart) renderSegmentRevisitChart(); break;
+                case 'anomalies': if (!vehicleProfileChart) renderVehicleProfileChart(); break;
+                case 'models': updateHeatmap(document.getElementById('model-select').value); break;
+                case 'service-types': updateServiceChart(document.getElementById('service-type-model-select').value); break;
+                case 'business-impact': if (!segmentComparisonChart) renderSegmentComparisonChart(); break;
+            }
+        }
+
+        window.onload = () => {
+            // Populate Dealer Table
+            const dealerTableBody = document.getElementById('dealer-table');
+            dealerData.forEach(dealer => {
+                const row = document.createElement('tr');
+                row.className = 'border-b border-[#30363d]';
+                row.innerHTML = `
+                    <td class="px-6 py-4 font-medium text-white whitespace-nowrap">${dealer.name}</td>
+                    <td class="px-6 py-4 text-red-400 font-semibold">${dealer.revisit.toFixed(1)}</td>
+                    <td class="px-6 py-4">${dealer.duration.toFixed(1)}</td>
+                    <td class="px-6 py-4"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-900 text-red-200">High Priority</span></td>
+                `;
+                dealerTableBody.appendChild(row);
+            });
+
+            populateDropdowns();
+            showPage('overview');
+        };
+
+    </script>
+</body>
+</html>
