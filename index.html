@@ -110,9 +110,9 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <!-- KPI Cards -->
                 <div class="card kpi-card p-6 flex flex-col justify-between">
-                    <h3>Total Records Analyzed</h3>
-                    <p class="text-[#1f77b4]">1,048,575</p>
-                    <p class="subtext">Comprehensive dataset from all service centers.</p>
+                    <h3>Services Analyzed</h3>
+                    <p class="text-[#1f77b4]">382,669</p>
+                    <p class="subtext">Focused analysis on service-related records.</p>
                 </div>
                 <div class="card kpi-card p-6 flex flex-col justify-between">
                     <h3>Service Anomalies</h3>
@@ -163,7 +163,7 @@
                                 <tr>
                                     <th scope="col" class="px-6 py-3">Dealer</th>
                                     <th scope="col" class="px-6 py-3">Revisit Rate (%)</th>
-                                    <th scope="col" class="px-6 py-3">Avg. Duration (Hrs)</th>
+                                    <th scope="col" class="px-6 py-3">Service Records</th>
                                     <th scope="col" class="px-6 py-3">Action Flag</th>
                                 </tr>
                             </thead>
@@ -336,11 +336,11 @@
         };
 
         const dealerData = [
-            { name: 'MOHAN MOTORS', revisit: 17.6, duration: 52.9 },
-            { name: 'LADAKH SINDH MOTORS', revisit: 17.6, duration: 12.6 },
-            { name: 'JK AUTOMOBILES', revisit: 15.9, duration: 15.9 },
-            { name: 'DIGVIJAY AUTOMOBILES', revisit: 12.7, duration: 8.5 },
-            { name: 'MAA MOTORS', revisit: 12.1, duration: 20.0 }
+            { name: 'MOHAN MOTORS', revisit: 17.6, serviceRecords: 51 },
+            { name: 'LADAKH SINDH MOTORS', revisit: 17.6, serviceRecords: 131 },
+            { name: 'JK AUTOMOBILES', revisit: 15.9, serviceRecords: 201 },
+            { name: 'DIGVIJAY AUTOMOBILES-3085840', revisit: 12.7, serviceRecords: 424 },
+            { name: 'MAA MOTORS', revisit: 12.1, serviceRecords: 132 }
         ];
 
         const vehicleProfileData = {
@@ -604,7 +604,7 @@
                 row.innerHTML = `
                     <td class="px-6 py-4 font-medium text-white whitespace-nowrap">${dealer.name}</td>
                     <td class="px-6 py-4 text-red-400 font-semibold">${dealer.revisit.toFixed(1)}</td>
-                    <td class="px-6 py-4">${dealer.duration.toFixed(1)}</td>
+                    <td class="px-6 py-4">${dealer.serviceRecords}</td>
                     <td class="px-6 py-4"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-900 text-red-200">High Priority</span></td>
                 `;
                 dealerTableBody.appendChild(row);
